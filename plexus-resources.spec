@@ -44,7 +44,7 @@
 
 Name:           plexus-resources
 Version:        1.0
-Release:        %mkrel 0.a4.1.0.1
+Release:        %mkrel 0.a4.1.0.2
 Epoch:          0
 Summary:        Plexus Command Line Component
 License:        Apache Software License
