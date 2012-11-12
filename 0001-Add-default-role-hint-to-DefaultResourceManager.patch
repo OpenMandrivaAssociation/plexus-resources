@@ -1,0 +1,25 @@
+From af71610068c086c03272c63716745fae519af96a Mon Sep 17 00:00:00 2001
+From: Stanislav Ochotnicky <sochotnicky@redhat.com>
+Date: Fri, 6 Aug 2010 15:25:23 +0200
+Subject: [PATCH] Add default role-hint to DefaultResourceManager
+
+---
+ .../plexus/resource/DefaultResourceManager.java    |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/src/main/java/org/codehaus/plexus/resource/DefaultResourceManager.java b/src/main/java/org/codehaus/plexus/resource/DefaultResourceManager.java
+index 8d840f9..5a464f3 100644
+--- a/src/main/java/org/codehaus/plexus/resource/DefaultResourceManager.java
++++ b/src/main/java/org/codehaus/plexus/resource/DefaultResourceManager.java
+@@ -44,7 +44,7 @@ import java.util.Map;
+  * @author <a href="mailto:trygvis@inamo.no">Trygve Laugst&oslash;l</a>
+  * @author Jason van Zyl
+  * @version $Id: DefaultResourceManager.java 8647 2010-02-15 00:08:07Z olamy $
+- * @plexus.component instantiation-strategy="per-lookup"
++ * @plexus.component instantiation-strategy="per-lookup" role-hint="default"
+  */
+ public class DefaultResourceManager
+     extends AbstractLogEnabled
+-- 
+1.7.2.1
+
