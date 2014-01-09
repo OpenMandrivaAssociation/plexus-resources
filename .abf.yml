@@ -1,4 +1,2 @@
 sources:
-  "plexus-resources-1.0-alpha-7-src.tar.xz:"	4ae4424a6466af30149253a6d60c8f06ecfc5d53
-  "plexus-resources-1.0-jpp-depmap.xml:"	d31481cc432bf6d9f053c1119260e35c90d69b8b
-  "plexus-resources-settings.xml:"	50f1727477a1f8a63f96b2bc48a7ac714c94b2af
+  plexus-resources-1.0-alpha-7-src.tar.xz: 4ae4424a6466af30149253a6d60c8f06ecfc5d53

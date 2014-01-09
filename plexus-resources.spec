@@ -1,3 +1,4 @@
+%{?_javapackages_macros:%_javapackages_macros}
 # Copyright (c) 2000-2005, JPackage Project
 # All rights reserved.
 #
@@ -34,43 +35,31 @@
 
 Name:           %{parent}-%{subname}
 Version:        1.0
-Release:        0.4.a7
+Release:        0.14.a7.1%{?dist}
 Summary:        Plexus Resource Manager
 License:        MIT
-Group:          Development/Java
+
 URL:            http://plexus.codehaus.org/
 # svn export http://svn.codehaus.org/plexus/plexus-components/tags/plexus-resources-1.0-alpha-7/
 # tar caf plexus-resources-1.0-alpha-7-src.tar.xz plexus-resources-1.0-alpha-7
 Source0:        %{name}-%{version}-alpha-7-src.tar.xz
-Source3:        plexus-resources-settings.xml
-Source4:        plexus-resources-1.0-jpp-depmap.xml
-Patch0:         0001-Add-default-role-hint-to-DefaultResourceManager.patch
-Requires:       classworlds >= 0:1.1
-Requires:       plexus-container-default
-Requires:       plexus-utils
-Requires:       jpackage-utils >= 0:1.7.3
-Requires(post): jpackage-utils >= 0:1.7.3
-Requires(postun): jpackage-utils >= 0:1.7.3
+
 BuildRequires:  jpackage-utils >= 0:1.7.3
 BuildRequires:  java-devel >= 0:1.5.0
 BuildRequires:  ant >= 0:1.6
-BuildRequires:  maven2
+BuildRequires:  maven-local
 BuildRequires:  maven-compiler-plugin
 BuildRequires:  maven-install-plugin
 BuildRequires:  maven-jar-plugin
 BuildRequires:  maven-javadoc-plugin
 BuildRequires:  maven-release-plugin
 BuildRequires:  maven-resources-plugin
-BuildRequires:  maven-surefire-maven-plugin
+BuildRequires:  maven-surefire-plugin
 BuildRequires:  maven-surefire-provider-junit
-BuildRequires:  maven-doxia
-BuildRequires:  maven-doxia-sitetools
-BuildRequires:  plexus-maven-plugin >= 1.3.5
-BuildRequires:  plexus-container-default
+BuildRequires:  plexus-containers-container-default
 BuildRequires:  plexus-utils
 
 BuildArch:      noarch
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root
 
 %description
 The Plexus project seeks to create end-to-end developer tools for
@@ -82,74 +71,110 @@ is like a J2EE application server, without all the baggage.
 
 %package javadoc
 Summary:        Javadoc for %{name}
-Group:          Development/Java
+
 
 %description javadoc
 API documentation for %{name}.
 
 %prep
 %setup -q -n %{name}-%{namedversion}
-cp -p %{SOURCE3} settings.xml
-%patch0 -p1
 
 %build
-sed -i -e "s|<url>__JPP_URL_PLACEHOLDER__</url>|<url>file://`pwd`/.m2/repository</url>|g" settings.xml
-sed -i -e "s|<url>__JAVADIR_PLACEHOLDER__</url>|<url>file://`pwd`/external_repo</url>|g" settings.xml
-sed -i -e "s|<url>__MAVENREPO_DIR_PLACEHOLDER__</url>|<url>file://`pwd`/.m2/repository</url>|g" settings.xml
-sed -i -e "s|<url>__MAVENDIR_PLUGIN_PLACEHOLDER__</url>|<url>file:///usr/share/maven2/plugins</url>|g" settings.xml
-sed -i -e "s|<url>__ECLIPSEDIR_PLUGIN_PLACEHOLDER__</url>|<url>file:///usr/share/eclipse/plugins</url>|g" settings.xml
-
-export MAVEN_REPO_LOCAL=$(pwd)/.m2/repository
-mkdir -p $MAVEN_REPO_LOCAL
-
-mkdir external_repo
-ln -s %{_javadir} external_repo/JPP
-
-mvn-jpp \
-        -e \
-        -s $(pwd)/settings.xml \
-        -Dmaven2.jpp.mode=true \
-        -Dmaven2.jpp.depmap.file=%{SOURCE4} \
-        -Dmaven.repo.local=$MAVEN_REPO_LOCAL \
-        install javadoc:javadoc
+%mvn_file  : %{parent}/%{subname}
+%mvn_build -f
 
 %install
-rm -rf $RPM_BUILD_ROOT
-# jars
-install -d -m 755 $RPM_BUILD_ROOT%{_javadir}/plexus
-install -pm 644 target/%{name}-%{namedversion}.jar \
-  $RPM_BUILD_ROOT%{_javadir}/plexus/%{subname}-%{version}.jar
-%add_to_maven_depmap org.codehaus.plexus %{name} %{namedversion} JPP/%{parent} %{subname}
+%mvn_install
+%if 0%{?fedora}
+%else
+# rpm5 parser...
+sed -i 's|1.0-alpha-7|1.0.alpha.7|g;' %{buildroot}%{_mavendepmapfragdir}/*
+%endif
 
-(cd $RPM_BUILD_ROOT%{_javadir}/plexus && for jar in *-%{version}*; do ln -sf ${jar} `echo $jar| sed  "s|-%{version}||g"`; done)
+%files -f .mfiles
 
-# poms
-install -d -m 755 $RPM_BUILD_ROOT%{_datadir}/maven2/poms
-install -pm 644 pom.xml \
-    $RPM_BUILD_ROOT%{_datadir}/maven2/poms/JPP.%{parent}-%{subname}.pom
+%files javadoc -f .mfiles-javadoc
 
-# javadoc
-install -d -m 755 $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
-cp -pr target/site/apidocs/* $RPM_BUILD_ROOT%{_javadocdir}/%{name}-%{version}
-ln -s %{name}-%{version} $RPM_BUILD_ROOT%{_javadocdir}/%{name}
+%changelog
+* Sun Aug 04 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.0-0.14.a7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
 
-%clean
-rm -rf $RPM_BUILD_ROOT
+* Fri Feb 08 2013 Michal Srb <msrb@redhat.com> - 1.0-0.13.a7
+- Remove unnecessary BR on maven-doxia and maven-doxia-sitetools
 
-%post
-%update_maven_depmap
+* Wed Feb 06 2013 Java SIG <java-devel@lists.fedoraproject.org> - 1.0-0.12.a7
+- Update for https://fedoraproject.org/wiki/Fedora_19_Maven_Rebuild
+- Replace maven BuildRequires with maven-local
 
-%postun
-%update_maven_depmap
+* Thu Jan 17 2013 Michal Srb <msrb@redhat.com> - 1.0-0.11.a7
+- Build with xmvn
 
-%files
-%defattr(-,root,root,-)
-%{_javadir}/%{parent}/*
-%{_mavenpomdir}/*
-%{_mavendepmapfragdir}/*
+* Thu Nov 22 2012 Jaromir Capik <jcapik@redhat.com> - 1.0-0.10.a7
+- Migration to plexus-containers-container-default
 
-%files javadoc
-%defattr(-,root,root,-)
-%{_javadocdir}/%{name}-%{version}
-%{_javadocdir}/%{name}
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.0-0.9.a7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.0-0.8.a7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
+* Mon Oct 17 2011 Stanislav Ochotnicky <sochotnicky@redhat.com> - 1.0-0.7.a7
+- Rebuild for java 1.6.0 downgrade
+
+* Wed Jul 27 2011 Jaromir Capik <jcapik@redhat.com> - 1.0-0.6.a7
+- Removal of plexus-maven-plugin dependency (not needed)
+- Minor spec file changes according to the latest guidelines
+
+* Sun Jun 12 2011 Alexander Kurtakov <akurtako@redhat.com> 1.0-0.5.a7
+- Build with maven 3.x
+
+* Wed Feb 09 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.0-0.4.a7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
+
+* Wed Aug 25 2010 Alexander Kurtakov <akurtako@redhat.com> 1.0-0.3.a7
+- Update to alpha 7.
+- Apply patch to fix rhbz#621714.
+- Use global instead of define.
+- Drop ant build - broken after update.
+
+* Wed Aug 26 2009 Andrew Overholt <overholt@redhat.com> 1.0-0.2.a4
+- Fix release and defattr
+- Make -javadoc description better
+
+* Tue Aug 25 2009 Andrew Overholt <overholt@redhat.com> 1.0-0.1.a4.5
+- Remove gcj support
+- Fix license tag
+- Improve source build instructions
+- Remove "excalibur-" prefix from two BRs
+
+* Thu Mar 20 2009 Yong Yang <yyang@redhat.com> 0:1.0-0.1.a4.4
+- Build with maven2-2.0.8 built in non-bootstrap mode
+- Add some missing BRs
+
+* Thu Mar 20 2009 Yong Yang <yyang@redhat.com> 0:1.0-0.1.a10.3
+- Build with maven2 2.0.8
+
+* Tue Jan 20 2009 Yong Yang <yyang@redhat.com> 0:1.0-0.1.a4.2jpp.1
+- Import from dbhole's maven 2.0.8 packages
+- Merge with JPP-5
+
+* Fri Sep 21 2007 Deepak Bhole <dbhole@redhat.com> 0:1.0-0.1.a4.2jpp.3
+- ExcludeArch ppc64
+
+* Tue Mar 20 2007 Deepak Bhole <dbhole@redhat.com> 0:1.0-0.1.a4.2jpp.2
+- Enable gcj
+
+* Tue Feb 20 2007 Tania Bento <tbento@redhat.com> 0:1.0-0.1.a4.2jpp.1
+- Fixed %%Release.
+- Fixed %%BuildRoot.
+- Removed %%Vendor.
+- Removed %%Distribution.
+- Edited instructions on how to generate the source drops.
+- Removed %%post and %%postun sections for javadoc.
+- Added gcj support.
+
+* Tue Oct 17 2006 Deepak Bhole <dbhole@redhat.com> 1.0-0.a4.2jpp
+- Update for maven2 9jpp
+
+* Mon Jun 12 2006 Deepak Bhole <dbhole@redhat.com> - 0:1.0-0.a4.1jpp
+- Initial build
