@@ -35,8 +35,9 @@
 
 Name:           %{parent}-%{subname}
 Version:        1.0
-Release:        0.14.a7.1%{?dist}
+Release:        0.16.a7.1
 Summary:        Plexus Resource Manager
+Group:          Development/Java
 License:        MIT
 
 URL:            http://plexus.codehaus.org/
@@ -88,7 +89,7 @@ API documentation for %{name}.
 %if 0%{?fedora}
 %else
 # rpm5 parser...
-sed -i 's|1.0-alpha-7|1.0.alpha.7|g;' %{buildroot}%{_mavendepmapfragdir}/*
+sed -i 's|1.0-alpha-7|1.0.alpha.7|g;' %{buildroot}%{_datadir}/maven-metadata/*
 %endif
 
 %files -f .mfiles
