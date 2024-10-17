@@ -40,7 +40,7 @@ Summary:        Plexus Resource Manager
 Group:          Development/Java
 License:        MIT
 
-URL:            http://plexus.codehaus.org/
+URL:            https://plexus.codehaus.org/
 # svn export http://svn.codehaus.org/plexus/plexus-components/tags/plexus-resources-1.0-alpha-7/
 # tar caf plexus-resources-1.0-alpha-7-src.tar.xz plexus-resources-1.0-alpha-7
 Source0:        %{name}-%{version}-alpha-7-src.tar.xz
